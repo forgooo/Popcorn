@@ -1,0 +1,13 @@
+@bot.message_handler(content_types=['text'])
+def start(message):
+    temp = 'no'
+    if message.text == '/start':
+        keyboard = types.InlineKeyboardMarkup()  # наша клавиатура
+        key_yes = types.InlineKeyboardButton(text='Да', callback_data='yes')  # кнопка «Да»
+        keyboard.add(key_yes);  # добавляем кнопку в клавиатуру
+        key_no = types.InlineKeyboardButton(text='Нет', callback_data='no');
+        keyboard.add(key_no);
+        question = "Вы у нас в первый раз?"
+        bot.send_message(message.from_user.id, text=question, reply_markup = keyboard)
+        if message.text == 'yes':
+            bot.register_next_step_handler(message,reg_start); #Проверка на авторизацию

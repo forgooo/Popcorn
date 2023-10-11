@@ -1,0 +1,86 @@
+
+import telebot
+from telebot import types
+
+bot = telebot.TeleBot('5382164610:AAGvlx54ZTPYIryxFHwR3Cf1yIpbetrSIyc')
+
+ch = False
+@bot.message_handler(commands=['start'])
+def start_message(message):
+    text = 'Здравствуйте'
+    bot.send_message(message.chat.id,text)
+    Yes_No_choose(message,'Вы у нас в первый раз?',message_reply)
+
+
+def Yes_No_choose(message,question,function):
+    markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1=types.KeyboardButton("Да")
+    markup.add(item1)
+    item1 = types.KeyboardButton("Нет")
+    markup.add(item1)
+    bot.send_message(message.chat.id,question,reply_markup=markup)
+    bot.register_next_step_handler(message,function)
+
+@bot.message_handler(commands=['text'])
+def message_reply(message):
+    if message.text=="Да":
+        reg_start(message.from_user.id,message)
+
+name = ''
+sername = ''
+mail = ''
+phone_nm = ''
+address = ''
+
+def reg_start(us_id,message):
+    bot.send_message(us_id, "Ваши имя и фамилия");
+    bot.register_next_step_handler(message,get_name);
+
+@bot.message_handler(commands=['text'])
+def get_name(message): #получаем фамилию
+    temp = message.text;
+    s = temp
+    global name
+    global sername
+    name, sername= s.split()
+    bot.send_message(message.from_user.id, 'Ваш контактный номер телефона');
+    bot.register_next_step_handler(message, get_phone_nm);
+
+@bot.message_handler(commands=['text'])
+def get_phone_nm(message):
+    global phone_nm;
+    temp =message.text
+    if ((temp[0:1]!='+7' and len(temp)!=12) and (temp[0]!='8' and len(temp)!=11)):
+        bot.send_message(message.from_user.id, 'Ваш контактный номер телефона');
+        bot.register_next_step_handler(message, get_phone_nm);
+    else:
+        phone_nm = message.text;
+        bot.send_message(message.from_user.id,'Ваш адрес?');
+        bot.register_next_step_handler(message, get_address);
+
+@bot.message_handler(commands=['text'])
+def get_address(message):
+    global address;
+    address = message.text
+    bot.send_message(message.from_user.id,'Давайте проверим');
+    get_check(message)
+
+def get_check(message):
+    question = 'Вы '+ name+" "+sername+'\n'\
+                +"Телефон: "+phone_nm+'\n'\
+                +'Адрес: '+address+'\n'\
+                +"Всё верно?"
+    Yes_No_choose(message,question,reg_end)
+
+
+@bot.message_handler(commands=['text'])
+def reg_end(message):
+    if message.text=="Да":
+        bot.send_message(message.from_user.id,':)')
+    else:
+        reg_start(message.from_user.id,message)
+
+bot.polling(none_stop=True, interval=0)
+
+
+
